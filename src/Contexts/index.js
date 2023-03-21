@@ -3,7 +3,7 @@ import { useState, createContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { db, auth } from '../Services/firebaseConnection';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 import { toast } from 'react-toastify';
@@ -14,8 +14,26 @@ export default function AuthProvider({ children }) {
 
     const [loadingAuth, setLoadingAuth] = useState(false);
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const navigate = useNavigate();
+
+
+    useEffect(() => {
+        async function loadUser(){
+            const storageUser = localStorage.getItem('@chamados')
+
+            if(storageUser){
+                setUser(JSON.parse(storageUser))
+                setLoading(false);
+            }
+
+            setLoading(false);
+        }
+
+        loadUser();
+    }, [])
+    
 
     async function signIn(email, password) {
         setLoadingAuth(true)
@@ -84,6 +102,12 @@ export default function AuthProvider({ children }) {
         localStorage.setItem('@chamados', JSON.stringify(data));
     }
 
+    async function logout() {
+        await signOut(auth)
+        localStorage.removeItem('@chamados')
+        setUser(null);
+    }
+
     return(
         <AuthContext.Provider
         value={{
@@ -91,7 +115,9 @@ export default function AuthProvider({ children }) {
             user,
             signIn,
             signUp,
-            loadingAuth
+            loadingAuth,
+            loading,
+            logout,
         }}
         >
             {children}
