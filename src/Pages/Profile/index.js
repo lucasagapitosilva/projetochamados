@@ -23,8 +23,8 @@ export default function Profile() {
     function handleImage(e) {
         const image = e.target.files[0];
 
-        if(image){
-            if(image.type === 'image/jpeg' || image.type === 'image/png'){
+        if (image) {
+            if (image.type === 'image/jpeg' || image.type === 'image/png') {
                 setImagemAvatar(image)
                 setAvatarUrl(URL.createObjectURL(image))
             } else {
@@ -35,54 +35,54 @@ export default function Profile() {
         }
     }
 
-    async function handleUpload(){
+    async function handleUpload() {
         const currentUid = user.uid;
         const uploadRef = ref(storage, `images/${currentUid}/${imagemAvatar.name}`)
         const uploadTask = uploadBytes(uploadRef, imagemAvatar)
-        .then((snapshot) => {
-            getDownloadURL(snapshot.ref)
-            .then(async (downloadURL) => {
-                let urlFoto = downloadURL;
+            .then((snapshot) => {
+                getDownloadURL(snapshot.ref)
+                    .then(async (downloadURL) => {
+                        let urlFoto = downloadURL;
 
-                const docRef = doc(db, "users", currentUid);
-                await updateDoc(docRef, {
-                    avatarUrl: urlFoto,
-                    nome: name,
-                })
-                .then(() => {
-                    let data = {
-                        ...user,
-                        nome: name,
-                        avatarUrl: urlFoto,
-                    }
-                    
-                    setUser(data);
-                    userStorage(data);
-                    setImagemAvatar(data);
-                    toast.success('Perfil atualizado com sucesso!');
-                })
+                        const docRef = doc(db, "users", currentUid);
+                        await updateDoc(docRef, {
+                            avatarUrl: urlFoto,
+                            nome: name,
+                        })
+                            .then(() => {
+                                let data = {
+                                    ...user,
+                                    nome: name,
+                                    avatarUrl: urlFoto,
+                                }
+
+                                setUser(data);
+                                userStorage(data);
+                                setImagemAvatar(data);
+                                toast.success('Perfil atualizado com sucesso!');
+                            })
+                    })
             })
-        })
     }
 
-    async function handleSubmit(e){
+    async function handleSubmit(e) {
         e.preventDefault();
 
-        if(imagemAvatar === null && name !== ''){
+        if (imagemAvatar === null && name !== '') {
             const docRef = doc(db, "users", user.uid)
             await updateDoc(docRef, {
                 nome: name,
             })
-            .then(() => {
-                let data = {
-                    ...user,
-                    nome: name
-                }
-                
-                setUser(data);
-                userStorage(data);
-                toast.success('Nome alterado com sucesso!')
-            })
+                .then(() => {
+                    let data = {
+                        ...user,
+                        nome: name
+                    }
+
+                    setUser(data);
+                    userStorage(data);
+                    toast.success('Nome alterado com sucesso!')
+                })
         } else if (imagemAvatar !== null && name !== '') {
             handleUpload();
         }
@@ -96,26 +96,26 @@ export default function Profile() {
                 <Title name="Minha conta">
                     <FiSettings size={25} />
                 </Title>
-            
+
                 <div className='container'>
                     <form className='form-profile' onSubmit={handleSubmit}>
                         <label className='label-avatar'>
                             <span>
-                                <FiUpload color="#FFF" size={25}/>
+                                <FiUpload color="#FFF" size={25} />
                             </span>
 
-                            <input type="file" accept="image/*" onChange={handleImage}/><br/>
+                            <input type="file" accept="image/*" onChange={handleImage} /><br />
                             {avatarUrl === null ? (
-                                <img src={avatar} alt="Foto de perfil" width={250} height={250}/>
+                                <img src={avatar} alt="Foto de perfil" width={250} height={250} />
                             ) : (
-                                <img src={avatarUrl} alt="Foto de perfil" width={250} height={250}/>
+                                <img src={avatarUrl} alt="Foto de perfil" width={250} height={250} />
                             )}
                         </label>
 
                         <label>Nome</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)}/>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
                         <label>Email</label>
-                        <input type="email" value={email} disabled={true}/>
+                        <input type="email" value={email} disabled={true} />
                         <button type="submit">Salvar</button>
                     </form>
                 </div>
