@@ -3,11 +3,12 @@ import Header from '../../Components/Header';
 import Title from '../../Components/Title';
 
 import { useState, useEffect, useContext } from 'react';
-import { collection, getDoc, getDocs, doc } from 'firebase/firestore';
+import { collection, getDoc, getDocs, doc, addDoc } from 'firebase/firestore';
 import { db } from '../../Services/firebaseConnection';
 import { AuthContext } from '../../Contexts';
 
 import { FiPlusCircle } from 'react-icons/fi';
+import { toast } from 'react-toastify';
 
 const docRef = collection(db, "customers")
 
@@ -62,6 +63,35 @@ export default function New() {
         setCustomerSelected(e.target.value);
     }
 
+    function handleSubjectSelected(e){
+        setSubject(e.target.value);
+    }
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        await addDoc(collection(db, "chamados"), {
+            created: new Date(),
+            clienteId: customers[customerSelected].id,
+            userId: user.uid,
+            status: status,
+            assunto: subject,
+            cliente: customers[customerSelected].nomeFantasia,
+            complemento: complement
+        })
+        .then(() =>{
+            toast.success("Novo chamado registrado!")
+            setCustomerSelected(0);
+            setSubject('Suporte');
+            setComplement('');
+            setStatus('Aberto')
+        })
+        .catch((error) => {
+            console.log(error)
+            toast.error("Não foi possivel registrar o chamado.")
+        })
+    }
+
     return (
         <div>
             <Header />
@@ -72,7 +102,7 @@ export default function New() {
                 </Title>
 
                 <div className="container">
-                    <form className="form-profile">
+                    <form className="form-profile" onSubmit={handleSubmit}>
                         <label>Clientes</label>
                         {
                             loadCustomer ? (
@@ -88,7 +118,7 @@ export default function New() {
                             )
                         }
                         <label>Assunto</label>
-                        <select>
+                        <select value={subject} onChange={handleSubjectSelected}>
                             <option value="Suporte">Suporte</option>
                             <option value="Visita Tecnica">Visita Tecnica</option>
                             <option value="Financeiro">Financeiro</option>
