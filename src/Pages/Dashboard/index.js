@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 
 import Header from '../../Components/Header';
 import Title from '../../Components/Title';
+import Modal from '../../Components/Modal';
 
 import { FiPlus, FiMessageSquare, FiSearch, FiEdit2 } from 'react-icons/fi';
 import { format } from 'date-fns';
@@ -24,6 +25,9 @@ export default function Dashboard() {
     const [lastDocs, setLastDocs] = useState();
     const [loadMore, setLoadMore] = useState(false);
     const [isEmpty, setIsEmpty] = useState(false);
+
+    const [detailModal, setDetailModal] = useState();
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         async function loadCalled() {
@@ -76,7 +80,7 @@ export default function Dashboard() {
 
     async function handleMore() {
         setLoadMore(true);
-        const q = query(listaRef, orderBy("created", "desc"), startAfter(lastDocs) , limit(5))
+        const q = query(listaRef, orderBy("created", "desc"), startAfter(lastDocs), limit(5))
         const querySnapshot = await getDocs(q);
         await updateState(querySnapshot);
     }
@@ -97,6 +101,11 @@ export default function Dashboard() {
                 </div>
             </div>
         )
+    }
+
+    function toggleModal(item){
+        setShowModal(!showModal);
+        setDetailModal(item);
     }
 
     return (
@@ -141,11 +150,11 @@ export default function Dashboard() {
                                                 <td data-label="Cliente">{item.cliente}</td>
                                                 <td data-label="Assunto">{item.assunto}</td>
                                                 <td data-label="Status">
-                                                    <span className="badge" style={{ backgroundColor: item.status === "Aberto" ? '#5CB85C' : '#999'}}>{item.status}</span>
+                                                    <span className="badge" style={{ backgroundColor: item.status === "Aberto" ? '#5CB85C' : '#999' }}>{item.status}</span>
                                                 </td>
                                                 <td data-label="Cadastrado">{item.createdFormat}</td>
                                                 <td data-label="#">
-                                                    <button className="action" style={{ backgroundColor: '#3583F6' }}>
+                                                    <button className="action" style={{ backgroundColor: '#3583F6' }} onClick={() => toggleModal(item)}>
                                                         <FiSearch color="#FFF" size={25} />
                                                     </button>
                                                     <Link to={`/new/${item.id}`} className="action" style={{ backgroundColor: '#F6A935' }}>
@@ -159,11 +168,13 @@ export default function Dashboard() {
                             </table>
 
                             {loadMore && <h3>Buscando mais chamados...</h3>}
-                            {!loadMore && !isEmpty && <button className="btn-more" onClick={handleMore}>Buscar novos chamados</button> }
+                            {!loadMore && !isEmpty && <button className="btn-more" onClick={handleMore}>Buscar novos chamados</button>}
                         </>
                     )}
                 </>
             </div>
+
+            {showModal && (<Modal details={detailModal} close={() => setShowModal(!showModal)}/>)}
         </div>
     )
 }
